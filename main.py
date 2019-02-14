@@ -4,6 +4,7 @@
 
 import turtle
 import os
+import math
 
 # Set up the screen
 window = turtle.Screen()
@@ -98,6 +99,18 @@ def fire_bullet():
         bullet.setposition(x, y)
         bullet.showturtle()
 
+def isCollsion(t1, t2):# bool function normally named as isIt_true() "color_mark(darkred)""
+    # Distance Formula: square root (X1-X2)^2 + (Y1-Y2)^2
+
+    # math.sqrt stand for SQuare RooT
+    # math.pow stand for POWer to
+    distance = math.sqrt(math.pow(t1.xcor()-t2.xcor(),2)+math.pow(t1.ycor()-t2.ycor(),2))
+
+    if distance < 15:
+        return True
+    else:
+        return False
+
 #Create keyboard bindings
 turtle.listen()
 turtle.onkey(move_left, "Left")
@@ -136,5 +149,24 @@ while True:
     if bullet.ycor() > 275:
         bullet.hideturtle()
         bulletstate = "ready"
+
+    # Check for a collision between the bullet and the enemy
+    if isCollsion(bullet, enemy):
+        #Reset the bullet
+        bullet.hideturtle()
+        bulletstate="ready"
+        bullet.setposition(0, -400)
+        #Reset the enemy
+        enemy.setposition(-200, 250)
+
+    # Check for a collision between the player and the enemy
+    if isCollsion(player, enemy):
+        player.hideturtle()
+        enemy.hideturtle()
+        print("\n"+"-"*35)
+        print("\n\n            Game Over!            \n\n")
+        print("-"*35+"\n")
+        break
+
 
 # delay = input("Press enter to finish.")
