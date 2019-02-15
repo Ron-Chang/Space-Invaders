@@ -8,14 +8,26 @@ import math
 import random
 
 # Set up the screen
+os.chdir("sfx/")
+os.system("afplay bgm.wav&")
+os.chdir("..")
+
 window = turtle.Screen()
 window.bgcolor("black")
 window.title("Space Invaders")
 
+os.chdir("img/")
+window.bgpic("bg.gif")
+
+# Register the shapes
+turtle.register_shape("invader.gif")
+turtle.register_shape("player.gif")
+os.chdir("..")
+
 # Draw border
 border_pen = turtle.Turtle()
 border_pen.speed(0) #0 is fastest
-border_pen.color("white")
+border_pen.color("#3DFF18")
 
 border_pen.penup() #lift up the pen
 border_pen.setposition(-300,-300)
@@ -27,10 +39,33 @@ for side in range(4):
     border_pen.lt(90) #left turn 90 degree
 border_pen.hideturtle()
 
+# Draw the title
+title_pen = turtle.Turtle()
+title_pen.speed(0)
+title_pen.color("#DD35F8")
+title_pen.penup()
+title_pen.setposition(0,300)
+titlestring = "SPACE INVADER"
+title_pen.write(titlestring, False, align="center", font=("Invasion 2028",32,"normal"))
+title_pen.hideturtle()
+
+# Set the score to 0
+score = 0
+
+# Draw the score
+score_pen = turtle.Turtle()
+score_pen.speed(0)
+score_pen.color("#3DFF18")
+score_pen.penup()
+score_pen.setposition(-290,305)
+scorestring = "Score: {}".format(score)
+score_pen.write(scorestring, False, align="left", font=("Invasion 2028",20,"normal"))
+score_pen.hideturtle()
+
 # Create the player turtle
 player = turtle.Turtle()
 player.color("purple")
-player.shape("triangle")
+player.shape("player.gif")
 player.penup()
 player.speed(0)
 player.setposition(0,-250)
@@ -48,32 +83,32 @@ enemies = []
 for i in range(number_of_enemies):
     # Create the enemy
     enemies.append(turtle.Turtle())
-# color = ["red","blue","darkred","green","yellow","white"]
+
 for enemy in enemies:
-    # rand_color = random.randint(0,5)
-    # enemy.color(color[rand_color])
+
     enemy.color("red")
-    enemy.shape("circle")
+    enemy.shape("invader.gif")
     enemy.penup()
     enemy.speed(0)
     x = random.randint(-200,200)
     y = random.randint(100,250)
+    # y = random.randint(-200,0) #Testing Game over
     enemy.setposition(x,y)
-    # enemy.setheading(270)
 
-enemyspeed = 2
+
+enemyspeed = 5
 
 # Create the player's bullet
 bullet = turtle.Turtle()
 bullet.color("yellow")
 bullet.shape("triangle")
-bullet.shapesize(0.15,0.5)
+bullet.shapesize(0.5,0.5)
 bullet.penup()
 bullet.speed(0)
 bullet.setheading(90)
 bullet.hideturtle()
 
-bulletspeed = 20
+bulletspeed = 30
 
 # Define bullet state
 # ready - ready to fire
@@ -106,6 +141,9 @@ def fire_bullet():
     global bulletstate
 
     if bulletstate == "ready":
+        os.chdir("sfx/")
+        os.system("afplay laser.wav&")
+        os.chdir("..")
         bulletstate = "fire"
         # Move the bullet to the just above the player
         x = player.xcor()
@@ -120,7 +158,7 @@ def isCollision(t1, t2):# bool function normally named as isIt_true() "color_mar
     # math.pow stand for POWer to
     distance = math.sqrt(math.pow(t1.xcor()-t2.xcor(),2)+math.pow(t1.ycor()-t2.ycor(),2))
 
-    if distance < 15:
+    if distance < 25:
         return True
     else:
         return False
@@ -164,6 +202,9 @@ while True:
 
         # Check for a collision between the bullet and the enemy
         if isCollision(bullet, enemy):
+            os.chdir("sfx/")
+            os.system("afplay explosion.wav&")
+            os.chdir("..")
             #Reset the bullet
             bullet.hideturtle()
             bulletstate="ready"
@@ -172,14 +213,29 @@ while True:
             x = random.randint(-200,200)
             y = random.randint(100,250)
             enemy.setposition(x,y)
+            #Update the score
+            score += 100
+            scorestring = "Score: {}".format(score)
+            score_pen.clear()
+            #clear the previous socre
+            score_pen.write(scorestring, False, align="left", font=("Invasion 2028",20,"normal"))
+
         # Check for a collision between the player and the enemy
-        if isCollision(player, enemy):
+        if (isCollision(player, enemy)) or (enemy.ycor() < -280):
+            os.chdir("sfx/")
+            os.system("killall afplay")
+            os.system("afplay gameover.wav&")
+            os.chdir("..")
             player.hideturtle()
             enemy.hideturtle()
             print("\n"+"-"*35)
             print("\n\n            Game Over!            \n\n")
             print("-"*35+"\n")
-            break
+            window.bgcolor("black")
+            window.title("Game Over")
+
+            # Terminated
+            exit()
 
     # Move the bullet
     if bulletstate == "fire":
@@ -191,7 +247,6 @@ while True:
     if bullet.ycor() > 275:
         bullet.hideturtle()
         bulletstate = "ready"
-
 
 
 # delay = input("Press enter to finish.")
